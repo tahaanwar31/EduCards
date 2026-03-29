@@ -1,7 +1,9 @@
+
 import express from 'express';
 import mongoose from 'mongoose';
 import { GoogleGenAI } from '@google/genai';
 import { Subject, Topic, Flashcard } from '../../backend/models.js';
+import serverless from 'serverless-http';
 
 const app = express();
 app.use(express.json());
@@ -202,4 +204,4 @@ Return ONLY a valid JSON array with this exact format, no markdown, no code fenc
   }
 });
 
-export default app;
+export default serverless(app);
