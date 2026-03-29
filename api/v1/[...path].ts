@@ -5,24 +5,27 @@ import { Subject, Topic, Flashcard } from '../../backend/models.js';
 import { connectDBServerless } from '../../backend/db.js';
 import serverless from 'serverless-http';
 
-/** Longer cold-start + Mongo connect on Vercel (plan limits still apply). */
-export const config = { maxDuration: 30 };
+export const config = { maxDuration: 60 };
 
 const app = express();
 
-// Vercel often invokes this function with a stripped path (e.g. /subjects) while routes are /api/v1/...
+// Vercel catch-all may pass a path without /api/v1 — normalize (preserve query string).
 app.use((req, _res, next) => {
   const u = req.url || '/';
-  if (!u.startsWith('/api/v1')) {
-    req.url = '/api/v1' + (u.startsWith('/') ? u : `/${u}`);
+  const qIndex = u.indexOf('?');
+  const pathPart = qIndex === -1 ? u : u.slice(0, qIndex);
+  const query = qIndex === -1 ? '' : u.slice(qIndex);
+  if (!pathPart.startsWith('/api/v1')) {
+    req.url = '/api/v1' + (pathPart.startsWith('/') ? pathPart : `/${pathPart}`) + query;
   }
   next();
 });
 
 app.use(express.json());
 
-// Middleware: connect DB before every request
-app.use(async (req, res, next) => {
+const v1 = express.Router();
+
+v1.use(async (req, res, next) => {
   try {
     await connectDBServerless();
     next();
@@ -31,10 +34,16 @@ app.use(async (req, res, next) => {
   }
 });
 
-// GET /api/v1/subjects is rewritten to /api/v1/list-subjects (see vercel.json). Nested /api/v1/subjects/:id/* hits this file.
+v1.get('/subjects', async (req, res) => {
+  try {
+    const subjects = await Subject.find().sort({ createdAt: -1 });
+    res.json(subjects);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch subjects' });
+  }
+});
 
-// --- Subjects ---
-app.post('/api/v1/subjects', async (req, res) => {
+v1.post('/subjects', async (req, res) => {
   try {
     const subject = new Subject(req.body);
     await subject.save();
@@ -44,7 +53,7 @@ app.post('/api/v1/subjects', async (req, res) => {
   }
 });
 
-app.delete('/api/v1/subjects/:id', async (req, res) => {
+v1.delete('/subjects/:id', async (req, res) => {
   try {
     await Subject.findByIdAndDelete(req.params.id);
     await Topic.deleteMany({ subjectId: req.params.id });
@@ -54,8 +63,7 @@ app.delete('/api/v1/subjects/:id', async (req, res) => {
   }
 });
 
-// --- Topics ---
-app.get('/api/v1/subjects/:subjectId/topics', async (req, res) => {
+v1.get('/subjects/:subjectId/topics', async (req, res) => {
   try {
     const topics = await Topic.find({ subjectId: req.params.subjectId }).sort({ createdAt: -1 });
     res.json(topics);
@@ -64,7 +72,7 @@ app.get('/api/v1/subjects/:subjectId/topics', async (req, res) => {
   }
 });
 
-app.post('/api/v1/subjects/:subjectId/topics', async (req, res) => {
+v1.post('/subjects/:subjectId/topics', async (req, res) => {
   try {
     const topic = new Topic({ ...req.body, subjectId: req.params.subjectId });
     await topic.save();
@@ -74,7 +82,7 @@ app.post('/api/v1/subjects/:subjectId/topics', async (req, res) => {
   }
 });
 
-app.delete('/api/v1/topics/:id', async (req, res) => {
+v1.delete('/topics/:id', async (req, res) => {
   try {
     await Topic.findByIdAndDelete(req.params.id);
     await Flashcard.deleteMany({ topicId: req.params.id });
@@ -84,8 +92,7 @@ app.delete('/api/v1/topics/:id', async (req, res) => {
   }
 });
 
-// --- Flashcards ---
-app.get('/api/v1/topics/:topicId/flashcards', async (req, res) => {
+v1.get('/topics/:topicId/flashcards', async (req, res) => {
   try {
     const flashcards = await Flashcard.find({ topicId: req.params.topicId }).sort({ createdAt: -1 });
     res.json(flashcards);
@@ -94,7 +101,7 @@ app.get('/api/v1/topics/:topicId/flashcards', async (req, res) => {
   }
 });
 
-app.post('/api/v1/topics/:topicId/flashcards', async (req, res) => {
+v1.post('/topics/:topicId/flashcards', async (req, res) => {
   try {
     const flashcard = new Flashcard({ ...req.body, topicId: req.params.topicId });
     await flashcard.save();
@@ -104,7 +111,7 @@ app.post('/api/v1/topics/:topicId/flashcards', async (req, res) => {
   }
 });
 
-app.delete('/api/v1/flashcards/:id', async (req, res) => {
+v1.delete('/flashcards/:id', async (req, res) => {
   try {
     await Flashcard.findByIdAndDelete(req.params.id);
     res.json({ success: true });
@@ -113,8 +120,7 @@ app.delete('/api/v1/flashcards/:id', async (req, res) => {
   }
 });
 
-// Quiz generation with AI (Groq primary, Gemini fallback)
-app.post('/api/v1/quiz/generate', async (req, res) => {
+v1.post('/quiz/generate', async (req, res) => {
   try {
     const { flashcards } = req.body;
     if (!flashcards || flashcards.length < 2) {
@@ -199,5 +205,7 @@ Return ONLY a valid JSON array with this exact format, no markdown, no code fenc
     res.status(503).json({ error: 'AI service is currently unavailable. Please try again later.' });
   }
 });
+
+app.use('/api/v1', v1);
 
 export default serverless(app);
