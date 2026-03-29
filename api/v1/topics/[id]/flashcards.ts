@@ -1,29 +1,29 @@
 import type { IncomingMessage, ServerResponse } from 'http';
-import { Topic } from '../../../../backend/models.js';
+import { Flashcard } from '../../../../backend/models.js';
 import { connectDBServerless } from '../../../../backend/db.js';
 import { getJsonBody } from '../../../_lib/json-body.js';
 
 export const config = { maxDuration: 60 };
 
-function getSubjectId(req: IncomingMessage & { query?: Record<string, unknown> }): string {
-  const q = req.query?.subjectId;
+function getTopicId(req: IncomingMessage & { query?: Record<string, unknown> }): string {
+  const q = req.query?.id;
   if (typeof q === 'string') return q;
   if (Array.isArray(q) && q[0]) return String(q[0]);
   const path = (req.url || '').split('?')[0];
-  const m = path.match(/\/subjects\/([^/]+)\/topics\/?$/);
+  const m = path.match(/\/topics\/([^/]+)\/flashcards\/?$/);
   return m?.[1] ?? '';
 }
 
-/** GET/POST /api/v1/subjects/:subjectId/topics */
+/** GET/POST /api/v1/topics/:id/flashcards */
 export default async function handler(
   req: IncomingMessage & { body?: unknown; query?: Record<string, string | string[]> },
   res: ServerResponse
 ) {
-  const subjectId = getSubjectId(req);
-  if (!subjectId) {
+  const topicId = getTopicId(req);
+  if (!topicId) {
     res.statusCode = 400;
     res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Missing subjectId' }));
+    res.end(JSON.stringify({ error: 'Missing topic id' }));
     return;
   }
 
@@ -38,14 +38,14 @@ export default async function handler(
 
   if (req.method === 'GET') {
     try {
-      const topics = await Topic.find({ subjectId }).sort({ createdAt: -1 });
+      const flashcards = await Flashcard.find({ topicId }).sort({ createdAt: -1 });
       res.statusCode = 200;
       res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify(topics));
+      res.end(JSON.stringify(flashcards));
     } catch {
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ error: 'Failed to fetch topics' }));
+      res.end(JSON.stringify({ error: 'Failed to fetch flashcards' }));
     }
     return;
   }
@@ -53,15 +53,15 @@ export default async function handler(
   if (req.method === 'POST') {
     try {
       const body = await getJsonBody(req);
-      const topic = new Topic({ ...body, subjectId });
-      await topic.save();
+      const flashcard = new Flashcard({ ...body, topicId });
+      await flashcard.save();
       res.statusCode = 201;
       res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify(topic));
+      res.end(JSON.stringify(flashcard));
     } catch {
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ error: 'Failed to create topic' }));
+      res.end(JSON.stringify({ error: 'Failed to create flashcard' }));
     }
     return;
   }

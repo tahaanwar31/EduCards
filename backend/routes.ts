@@ -12,13 +12,32 @@ router.use((req, res, next) => {
   next();
 });
 
-// Subjects
+// Subjects (paths align with Vercel api/v1 serverless files)
+router.get('/subjects-list', async (req, res) => {
+  try {
+    const subjects = await Subject.find().sort({ createdAt: -1 });
+    res.json(subjects);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch subjects' });
+  }
+});
+
 router.get('/subjects', async (req, res) => {
   try {
     const subjects = await Subject.find().sort({ createdAt: -1 });
     res.json(subjects);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch subjects' });
+  }
+});
+
+router.post('/subjects/create', async (req, res) => {
+  try {
+    const subject = new Subject(req.body);
+    await subject.save();
+    res.status(201).json(subject);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create subject' });
   }
 });
 
@@ -29,6 +48,16 @@ router.post('/subjects', async (req, res) => {
     res.status(201).json(subject);
   } catch (error) {
     res.status(500).json({ error: 'Failed to create subject' });
+  }
+});
+
+router.delete('/subjects/:id/delete', async (req, res) => {
+  try {
+    await Subject.findByIdAndDelete(req.params.id);
+    await Topic.deleteMany({ subjectId: req.params.id });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete subject' });
   }
 });
 
@@ -59,6 +88,16 @@ router.post('/subjects/:subjectId/topics', async (req, res) => {
     res.status(201).json(topic);
   } catch (error) {
     res.status(500).json({ error: 'Failed to create topic' });
+  }
+});
+
+router.delete('/topics/:id/delete', async (req, res) => {
+  try {
+    await Topic.findByIdAndDelete(req.params.id);
+    await Flashcard.deleteMany({ topicId: req.params.id });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete topic' });
   }
 });
 

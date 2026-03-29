@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'http';
-import { Topic, Flashcard } from '../../../backend/models.js';
-import { connectDBServerless } from '../../../backend/db.js';
+import { Subject, Topic } from '../../../../backend/models.js';
+import { connectDBServerless } from '../../../../backend/db.js';
 
 export const config = { maxDuration: 60 };
 
@@ -9,11 +9,11 @@ function getId(req: IncomingMessage & { query?: Record<string, unknown> }): stri
   if (typeof q === 'string') return q;
   if (Array.isArray(q) && q[0]) return String(q[0]);
   const path = (req.url || '').split('?')[0];
-  const m = path.match(/\/topics\/([^/]+)\/?$/);
+  const m = path.match(/\/subjects\/([^/]+)\/delete\/?$/);
   return m?.[1] ?? '';
 }
 
-/** DELETE /api/v1/topics/:id */
+/** DELETE /api/v1/subjects/:id/delete */
 export default async function handler(req: IncomingMessage & { query?: Record<string, unknown> }, res: ServerResponse) {
   if (req.method !== 'DELETE') {
     res.statusCode = 405;
@@ -33,14 +33,14 @@ export default async function handler(req: IncomingMessage & { query?: Record<st
 
   try {
     await connectDBServerless();
-    await Topic.findByIdAndDelete(id);
-    await Flashcard.deleteMany({ topicId: id });
+    await Subject.findByIdAndDelete(id);
+    await Topic.deleteMany({ subjectId: id });
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({ success: true }));
   } catch {
     res.statusCode = 500;
     res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Failed to delete topic' }));
+    res.end(JSON.stringify({ error: 'Failed to delete subject' }));
   }
 }

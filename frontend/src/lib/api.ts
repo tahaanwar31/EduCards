@@ -24,7 +24,7 @@ export async function createSubject(data: { name: string; description?: string }
 }
 
 export async function deleteSubject(id: string) {
-  const res = await fetch(`${API_URL}/subjects/${id}`, { method: 'DELETE' });
+  const res = await fetch(`${API_URL}/subjects/${id}/delete`, { method: 'DELETE' });
   return handleResponse(res, 'Failed to delete subject');
 }
 
@@ -43,7 +43,7 @@ export async function createTopic(subjectId: string, data: { name: string }) {
 }
 
 export async function deleteTopic(id: string) {
-  const res = await fetch(`${API_URL}/topics/${id}`, { method: 'DELETE' });
+  const res = await fetch(`${API_URL}/topics/${id}/delete`, { method: 'DELETE' });
   return handleResponse(res, 'Failed to delete topic');
 }
 
