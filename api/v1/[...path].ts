@@ -1,4 +1,5 @@
 import express from 'express';
+import 'express-async-errors';
 import { GoogleGenAI } from '@google/genai';
 import { Subject, Topic, Flashcard } from '../../backend/models.js';
 import { connectDBServerless } from '../../backend/db.js';
@@ -30,16 +31,9 @@ app.use(async (req, res, next) => {
   }
 });
 
-// --- Subjects ---
-app.get('/api/v1/subjects', async (req, res) => {
-  try {
-    const subjects = await Subject.find().sort({ createdAt: -1 });
-    res.json(subjects);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch subjects' });
-  }
-});
+// GET /api/v1/subjects is handled by api/v1/subjects.ts (native handler — avoids Express/serverless-http hangs on Vercel).
 
+// --- Subjects ---
 app.post('/api/v1/subjects', async (req, res) => {
   try {
     const subject = new Subject(req.body);

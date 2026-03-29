@@ -1,4 +1,7 @@
+import dns from 'dns';
 import mongoose from 'mongoose';
+
+dns.setDefaultResultOrder('ipv4first');
 
 /** Prefer IPv4 — some serverless ↔ Atlas routes stall on IPv6/SRV. */
 const mongooseOpts: mongoose.ConnectOptions = {
@@ -16,6 +19,14 @@ declare global {
   var __mongooseServerlessPromise: Promise<typeof mongoose> | undefined;
 }
 
+function sanitizeMongoUri(raw: string): string {
+  let u = raw.trim();
+  if ((u.startsWith('"') && u.endsWith('"')) || (u.startsWith("'") && u.endsWith("'"))) {
+    u = u.slice(1, -1);
+  }
+  return u.trim();
+}
+
 function withRequiredQueryParams(uri: string): string {
   if (uri.includes('retryWrites=')) return uri;
   const sep = uri.includes('?') ? '&' : '?';
@@ -29,7 +40,7 @@ export async function connectDB() {
     return false;
   }
   try {
-    await mongoose.connect(withRequiredQueryParams(uri), mongooseOpts);
+    await mongoose.connect(withRequiredQueryParams(sanitizeMongoUri(uri)), mongooseOpts);
     console.log('Connected to MongoDB');
     return true;
   } catch (error) {
@@ -66,7 +77,7 @@ async function connectOnce(uri: string): Promise<typeof mongoose> {
 export async function connectDBServerless(): Promise<void> {
   const raw = process.env.MONGODB_URI;
   if (!raw) throw new Error('MONGODB_URI not configured');
-  const uri = withRequiredQueryParams(raw.trim());
+  const uri = withRequiredQueryParams(sanitizeMongoUri(raw));
 
   if (mongoose.connection.readyState === 1) return;
 
