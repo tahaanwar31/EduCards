@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { Subject, Topic, Flashcard } from './server/models.js';
+import { Subject, Topic, Flashcard } from './backend/models.js';
 import dotenv from 'dotenv';
 
 dotenv.config();

@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-const API_URL = '/api';
+const API_URL = '/api/v1';
 
 async function handleResponse(res: Response, defaultMessage: string) {
   if (!res.ok) {
