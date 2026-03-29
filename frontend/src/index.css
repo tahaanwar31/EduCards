@@ -1,0 +1,150 @@
+﻿@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer utilities {
+  .preserve-3d { transform-style: preserve-3d; }
+  .backface-hidden { backface-visibility: hidden; }
+  .perspective-1000 { perspective: 1000px; }
+  .bg-dot-white {
+    background-image: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2' cy='2' r='1' fill='%23ffffff' fill-opacity='0.07'/%3E%3C/svg%3E");
+  }
+  .bg-grid-white {
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h40v40H0V0zm1 1h38v38H1V1z' fill='%23ffffff' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+  }
+
+  .glass-card {
+    background: rgba(12, 12, 12, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+  }
+  .glass-card:hover {
+    background: rgba(18, 18, 18, 0.98);
+    border-color: rgba(220, 38, 38, 0.12);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(220, 38, 38, 0.04);
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+    box-shadow: 0 0 20px rgba(220, 38, 38, 0.3), 0 0 60px rgba(220, 38, 38, 0.08), inset 0 1px 0 rgba(255,255,255,0.15);
+  }
+  .btn-primary:hover {
+    box-shadow: 0 0 30px rgba(220, 38, 38, 0.5), 0 0 80px rgba(220, 38, 38, 0.15), inset 0 1px 0 rgba(255,255,255,0.2);
+  }
+  .btn-glass {
+    background: rgba(12, 12, 12, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  }
+  .btn-glass:hover {
+    background: rgba(22, 22, 22, 0.95);
+    border-color: rgba(220, 38, 38, 0.15);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+  }
+  .card-shine::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(220,38,38,0.12) 50%, transparent 100%);
+    z-index: 1;
+  }
+  .btn-shine-effect {
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-shine-effect::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    animation: btn-shine 4s ease-in-out infinite;
+  }
+}
+
+@layer components {
+  .animate-gradient-x {
+    background-size: 200% 200%;
+    animation: gradient-x 4s ease infinite;
+  }
+  .animate-grain { animation: grain 8s steps(10) infinite; }
+}
+
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes grain {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-5%, -10%); }
+  20% { transform: translate(-15%, 5%); }
+  30% { transform: translate(7%, -25%); }
+  40% { transform: translate(-5%, 25%); }
+  50% { transform: translate(-15%, 10%); }
+  60% { transform: translate(15%, 0%); }
+  70% { transform: translate(0%, 15%); }
+  80% { transform: translate(3%, 35%); }
+  90% { transform: translate(-10%, 10%); }
+}
+
+@keyframes btn-shine {
+  0% { left: -100%; }
+  20% { left: 100%; }
+  100% { left: 100%; }
+}
+
+/* Glitch text animation */
+.glitch-text {
+  position: relative;
+  animation: glitch-skew 6s infinite linear alternate-reverse;
+}
+.glitch-text::before,
+.glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.glitch-text::before {
+  color: rgba(220, 38, 38, 0.5);
+  animation: glitch-1 3s infinite linear alternate-reverse;
+  clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+}
+.glitch-text::after {
+  color: rgba(96, 165, 250, 0.3);
+  animation: glitch-2 3s infinite linear alternate-reverse;
+  clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
+}
+
+@keyframes glitch-1 {
+  0%, 85% { transform: translate(0); }
+  86% { transform: translate(-3px, -1px); }
+  88% { transform: translate(3px, 1px); }
+  90% { transform: translate(-2px, 0); }
+  92% { transform: translate(2px, -1px); }
+  94%, 100% { transform: translate(0); }
+}
+@keyframes glitch-2 {
+  0%, 87% { transform: translate(0); }
+  88% { transform: translate(3px, 1px); }
+  90% { transform: translate(-3px, -1px); }
+  92% { transform: translate(2px, 0); }
+  94% { transform: translate(-2px, 1px); }
+  96%, 100% { transform: translate(0); }
+}
+@keyframes glitch-skew {
+  0%, 88% { transform: skew(0deg); }
+  89% { transform: skew(0.5deg); }
+  90% { transform: skew(-0.3deg); }
+  91% { transform: skew(0.4deg); }
+  92%, 100% { transform: skew(0deg); }
+}
