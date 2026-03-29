@@ -31,7 +31,7 @@ app.use(async (req, res, next) => {
   }
 });
 
-// GET /api/v1/subjects is handled by api/v1/subjects.ts (native handler — avoids Express/serverless-http hangs on Vercel).
+// GET /api/v1/subjects is rewritten to /api/v1/list-subjects (see vercel.json). Nested /api/v1/subjects/:id/* hits this file.
 
 // --- Subjects ---
 app.post('/api/v1/subjects', async (req, res) => {

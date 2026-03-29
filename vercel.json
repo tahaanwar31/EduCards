@@ -8,7 +8,10 @@
     }
   },
   "rewrites": [
-    { "source": "/api/v1/(.*)", "destination": "/api/v1/$1" },
+    {
+      "source": "/api/v1/subjects",
+      "destination": "/api/v1/list-subjects"
+    },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }

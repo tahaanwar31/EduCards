@@ -5,8 +5,8 @@ import { Subject } from '../../backend/models.js';
 export const config = { maxDuration: 60 };
 
 /**
- * Dedicated handler for GET /api/v1/subjects (bypasses Express + serverless-http).
- * Vercel routes this file to /api/v1/subjects — avoids known hangs with nested catch-alls.
+ * GET /api/v1/subjects (via vercel.json rewrite from /api/v1/subjects).
+ * Lives at list-subjects.ts so /api/v1/subjects/* is NOT shadowed — nested routes use [...path].ts.
  */
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
   if (req.method !== 'GET') {
