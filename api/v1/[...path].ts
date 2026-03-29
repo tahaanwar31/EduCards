@@ -8,6 +8,16 @@ import serverless from 'serverless-http';
 export const config = { maxDuration: 30 };
 
 const app = express();
+
+// Vercel often invokes this function with a stripped path (e.g. /subjects) while routes are /api/v1/...
+app.use((req, _res, next) => {
+  const u = req.url || '/';
+  if (!u.startsWith('/api/v1')) {
+    req.url = '/api/v1' + (u.startsWith('/') ? u : `/${u}`);
+  }
+  next();
+});
+
 app.use(express.json());
 
 // Middleware: connect DB before every request
