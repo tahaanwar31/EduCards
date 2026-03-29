@@ -34,14 +34,7 @@ v1.use(async (req, res, next) => {
   }
 });
 
-v1.get('/subjects', async (req, res) => {
-  try {
-    const subjects = await Subject.find().sort({ createdAt: -1 });
-    res.json(subjects);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch subjects' });
-  }
-});
+// GET /api/v1/subjects (list) → api/v1/subjects.ts — do not duplicate here.
 
 v1.post('/subjects', async (req, res) => {
   try {
