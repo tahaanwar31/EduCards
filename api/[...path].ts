@@ -1,28 +1,30 @@
 import express from 'express';
-import mongoose from 'mongoose';
 import { GoogleGenAI } from '@google/genai';
 import { Subject, Topic, Flashcard } from '../backend/models.js';
+import { connectDBServerless } from '../backend/db.js';
 import serverless from 'serverless-http';
+
+export const config = { maxDuration: 30 };
 
 const app = express();
 app.use(express.json());
 
-// Reuse MongoDB connection across invocations
-let isConnected = false;
-async function connectDB() {
-  if (isConnected) return;
-  const uri = process.env.MONGODB_URI;
-  if (!uri) throw new Error('MONGODB_URI not configured');
-  await mongoose.connect(uri);
-  isConnected = true;
-}
+// Legacy handler: requests arrive as /api/subjects but routes are /subjects
+app.use((req, _res, next) => {
+  const u = req.url || '';
+  if (u === '/api' || u.startsWith('/api/')) {
+    const stripped = u.slice(4) || '/';
+    req.url = stripped;
+  }
+  next();
+});
 
 // Middleware: connect DB before every request
 app.use(async (req, res, next) => {
   try {
-    await connectDB();
+    await connectDBServerless();
     next();
-  } catch (error) {
+  } catch {
     res.status(503).json({ error: 'Database connection failed' });
   }
 });
