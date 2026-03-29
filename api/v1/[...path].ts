@@ -34,7 +34,7 @@ v1.use(async (req, res, next) => {
   }
 });
 
-// GET /api/v1/subjects (list) → api/v1/subjects.ts — do not duplicate here.
+// GET list uses /api/v1/subjects-list (subjects-list.ts). Do not add api/v1/subjects.ts — Vercel steals /subjects/*.
 
 v1.post('/subjects', async (req, res) => {
   try {

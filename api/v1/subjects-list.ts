@@ -5,8 +5,8 @@ import { Subject } from '../../backend/models.js';
 export const config = { maxDuration: 60 };
 
 /**
- * GET /api/v1/subjects only (exact path). Other methods and /subjects/* are handled by [...path].ts.
- * Native handler avoids Express+serverless-http cold hangs on Vercel for the dashboard list.
+ * GET /api/v1/subjects-list — dashboard list only.
+ * Do NOT use api/v1/subjects.ts: on Vercel it captures /api/v1/subjects/* and breaks .../topics.
  */
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
   if (req.method !== 'GET') {
@@ -25,7 +25,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     res.end(JSON.stringify(subjects));
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : 'Database error';
-    console.error('[GET /api/v1/subjects]', msg);
+    console.error('[GET /api/v1/subjects-list]', msg);
     res.statusCode = 503;
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({ error: msg }));

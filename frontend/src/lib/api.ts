@@ -10,7 +10,7 @@ async function handleResponse(res: Response, defaultMessage: string) {
 }
 
 export async function fetchSubjects() {
-  const res = await fetch(`${API_URL}/subjects`);
+  const res = await fetch(`${API_URL}/subjects-list`);
   return handleResponse(res, 'Failed to fetch subjects');
 }
 
