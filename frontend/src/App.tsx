@@ -1,3 +1,4 @@
+import { Analytics } from '@vercel/analytics/react';
 import { BrowserRouter, Routes, Route } from 'react-router';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
@@ -22,6 +23,8 @@ export default function App() {
           <Route path="contact" element={<ContactSupport />} />
         </Route>
       </Routes>
+
+      <Analytics />
     </BrowserRouter>
   );
 }
