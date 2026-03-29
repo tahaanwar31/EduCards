@@ -15,7 +15,7 @@ export async function fetchSubjects() {
 }
 
 export async function createSubject(data: { name: string; description?: string }) {
-  const res = await fetch(`${API_URL}/subjects`, {
+  const res = await fetch(`${API_URL}/subjects/create`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
